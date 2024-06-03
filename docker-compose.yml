@@ -1,0 +1,42 @@
+services:
+  wallet-service-app:
+    image: wallet-service-app
+    platform: linux/amd64
+    build:
+      context: ./wallet-service
+    volumes:
+      - ./wallet-service/:/opt/www
+    ports:
+      - 9501:9501
+    environment:
+      - APP_ENV=dev
+      - SCAN_CACHEABLE=false
+    networks:
+      - default-network
+    depends_on:
+      - wallet-service-redis
+      - wallet-service-mysql
+
+  wallet-service-mysql:
+    image: 'mysql:8.0'
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: 'simplebank'
+      MYSQL_ROOT_PASSWORD: 'simplebank'
+      MYSQL_PASSWORD: 'simplebank'
+      MYSQL_USER: 'simplebank'
+    volumes:
+      - './wallet-service/infra/mysql/data:/var/lib/mysql'
+    ports:
+      - '3306:3306'
+    networks:
+      - default-network
+
+  wallet-service-redis:
+    image: 'redis:alpine3.20'
+    networks:
+      - default-network
+
+networks:
+  default-network:
+    driver: bridge
